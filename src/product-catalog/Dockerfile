@@ -1,23 +1,28 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.23.10-alpine3.19 AS builder
 
-WORKDIR usr/src/app
+WORKDIR /usr/src/app
 
 COPY . .
 
+RUN apk update && apk upgrade --no-cache && apk add --no-cache git
+
 RUN go mod download
 
-#product-catalog is a custom made folder in usr/src/app
+# Compile Go binary
 RUN go build -o product-catalog ./
 
-FROM alpine AS release
+FROM alpine:3.19 AS release
 
-WORKDIR usr/src/app
+WORKDIR /usr/src/app
 
-# it is taking data from the product folder
+RUN apk update && apk upgrade --no-cache
+
 COPY ./products ./products
-
-COPY --from=builder /usr/src/app ./
+COPY --from=builder /usr/src/app/product-catalog ./
 
 ENV PRODUCT_CATALOG_PORT=8088
 
+#EXPOSE ${PRODUCT_CATALOG_PORT}
+
 ENTRYPOINT ["./product-catalog"]
+
