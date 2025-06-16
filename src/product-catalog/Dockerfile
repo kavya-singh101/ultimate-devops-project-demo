@@ -4,8 +4,6 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN apk update && apk upgrade --no-cache && apk add --no-cache git
-
 RUN go mod download
 
 # Compile Go binary
@@ -14,8 +12,6 @@ RUN go build -o product-catalog ./
 FROM alpine:3.19 AS release
 
 WORKDIR /usr/src/app
-
-RUN apk update && apk upgrade --no-cache
 
 COPY ./products ./products
 COPY --from=builder /usr/src/app/product-catalog ./
